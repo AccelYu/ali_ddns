@@ -12,13 +12,6 @@ class DDdns:
         self.mail = None
         self.retry_limit = 5
 
-    def send_mail(self, current_ip):
-        current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        content = 'ip变更为:%s\n变更时间:%s' % (
-            current_ip, current_time)
-        self.mail.send(content)
-        log.info('邮件发送成功')
-
     def verify_subdomain(self, domain):
         self.domain_obj.get_txtRecord(domain)
 
@@ -67,8 +60,6 @@ class DDdns:
                 # 将当前ip更新到解析记录
                 self.domain_obj.update_domainRecord(recordID, rr, type, current_ip)
                 pre_ip = current_ip
-                if self.mail:
-                    self.send_mail(current_ip)
             else:
                 log.info('ip没有改变，不做任何操作')
             time.sleep(cfg['interval'])

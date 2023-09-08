@@ -6,7 +6,9 @@ from ttkbootstrap import StringVar
 import json
 import threading
 import ctypes
-from logger import mq
+import logging
+from logger import log, QueueFileHandler
+from queue import Queue
 
 
 class MyUI:
@@ -79,8 +81,10 @@ class MyUI:
         interval_txt.grid(column=1, row=3, padx=10, pady=5)
 
     def set_cfg(self):
+        log.info('读取配置')
         with open('cfg.json', 'r') as f:
             cfg = json.load(f)
+        log.info('读取配置成功')
         self.accessKeyId_entry.delete(0, END)
         self.accessKeyId_entry.insert(0, cfg['accessKeyId'])
         self.accessKeySecret_entry.delete(0, END)
@@ -102,7 +106,9 @@ class MyUI:
         cfg = self.read_cfg()
         with open('cfg.json', 'w') as f:
             json.dump(cfg, f, indent=2)
-        if self.ddns_thread:
+        log.info('应用配置成功')
+        log.info('重新运行')
+        if self.ddns_thread:  # 如果有ddns监听线程，则强制中断
             ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(self.ddns_thread.ident), ctypes.py_object(SystemExit))
             self.ddns_thread = None
         ddns = DDdns()
@@ -128,6 +134,13 @@ class MyUI:
 
 
 if __name__ == '__main__':
+    # 初始化日志
+    mq = Queue()
+    formatter = logging.Formatter('[%(asctime)s] [%(levelname)5s] %(message)s')
+    qfh = QueueFileHandler(mq, filename='./ddns.log', encoding='utf8')
+    qfh.setFormatter(formatter)
+    log.addHandler(qfh)
+
     app = ttk.Window("ali_ddns")
     ui = MyUI(app)
     ui.run()

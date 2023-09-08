@@ -1,5 +1,6 @@
-import json
+import logging
 from logger import log
+import json
 import re
 import requests
 import time
@@ -64,6 +65,12 @@ class DDdns:
 
 
 if __name__ == '__main__':
+    # 初始化日志
+    formatter = logging.Formatter('[%(asctime)s] [%(levelname)5s] %(message)s')
+    fh = logging.FileHandler(filename='./ddns.log', encoding='utf8')
+    fh.setFormatter(formatter)
+    log.addHandler(fh)
+
     log.info('读取配置')
     with open('cfg.json') as fp:
         cfg = json.load(fp)

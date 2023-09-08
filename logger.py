@@ -1,10 +1,15 @@
 import logging
 from functools import wraps
 import traceback
-from queue import Queue
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
 
 
 class QueueFileHandler(logging.FileHandler):
+    """
+    继承FileHandler，将日志内容放入队列，使得ui界面能获取日志内容并打印
+    """
     def __init__(self, queue, **args):
         super().__init__(**args)
         self.queue = queue
@@ -12,15 +17,6 @@ class QueueFileHandler(logging.FileHandler):
     def emit(self, record):
         super().emit(record)
         self.queue.put(f'[{record.asctime}] [{record.levelname:>5}] {record.message}')
-
-
-mq = Queue()
-log = logging.getLogger()
-log.setLevel(logging.INFO)
-qfh = QueueFileHandler(mq, filename='./ddns.log', encoding='utf8')
-formatter = logging.Formatter('[%(asctime)s] [%(levelname)5s] %(message)s')
-qfh.setFormatter(formatter)
-log.addHandler(qfh)
 
 
 def log_exc(msg):

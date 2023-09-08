@@ -1,5 +1,5 @@
 import json
-import log
+from logger import log
 import re
 import requests
 import time
@@ -19,32 +19,30 @@ class DDdns:
         pass
 
     def get_current_ip(self):
-        count = 0
-        if count < self.retry_limit:
+        for i in range(self.retry_limit):
             try:
-                raw = requests.get('https://txt.go.sohu.com/ip/soip', timeout=2)
+                raw = requests.get('https://txt.go.sohu.com/ip/soip', timeout=5)
                 current_ip = re.search(r'\d+.\d+.\d+.\d+', raw.text).group()
                 return current_ip
             except requests.exceptions.RequestException:
-                count += 1
-                log.info('尝试获取公网ip，重试第%s次...' % count)
-                if count == self.retry_limit:
-                    log.info('获取公网ip失败，请检查网络连接')
+                log.info(f'尝试获取公网ip，失败第{i + 1}次...')
+                if i + 1 != self.retry_limit:
+                    time.sleep(2)
+                else:
+                    log.info('尝试获取公网ip失败，请检查网络连接')
 
-    def run(self):
+    def run(self, cfg):
         log.info('==========开始运行==========')
-        log.info('读取配置')
-        with open('cfg.json') as fp:
-            cfg = json.load(fp)
-        log.info('读取配置成功')
         self.domain_obj = Domain()
         self.domain_obj.create_client(cfg['accessKeyId'], cfg['accessKeySecret'])
         domain_name = cfg['domain_name']
         rr = '@'
         type = 'A'
-        recordID = self.domain_obj.get_recordID(domain_name)
         current_ip = self.get_current_ip()
+        if current_ip is None:
+            return
         log.info('当前公网ip:' + current_ip)
+        recordID = self.domain_obj.get_recordID(domain_name)
         if not recordID:  # 查不到recordID说明没有解析记录
             # 添加解析记录
             add_back_info = self.domain_obj.add_domainRecord(domain_name, rr, type, current_ip)
@@ -53,7 +51,6 @@ class DDdns:
         else:
             # 解析记录中的ip
             pre_ip = self.domain_obj.describe_domainInfo(recordID).body.value
-
         while True:
             if pre_ip != current_ip:
                 log.info('过期ip:' + pre_ip)
@@ -62,5 +59,14 @@ class DDdns:
                 pre_ip = current_ip
             else:
                 log.info('ip没有改变，不做任何操作')
-            time.sleep(cfg['interval'])
+            time.sleep(cfg['interval'] * 60)
             current_ip = self.get_current_ip()
+
+
+if __name__ == '__main__':
+    log.info('读取配置')
+    with open('cfg.json') as fp:
+        cfg = json.load(fp)
+    log.info('读取配置成功')
+    ddns = DDdns()
+    ddns.run(cfg)

@@ -11,16 +11,16 @@
 accessKeyId：上一步中的id  
 accessKeySecret：上一步中的serect  
 domain_name：你的子域名  
-interval：轮询间隔，单位秒
+interval：轮询间隔，单位分钟
 ```json
 {
   "accessKeyId": "xxx",
   "accessKeySecret": "xxx",
   "domain_name": "xxx.xxx.xxx",
-  "interval": 60
+  "interval": 5
 }
 ```
 ### 无GUI版
 只能填写cfg.json
 ### 有GUI版
-可进入界面填写配置，开发中未实装
+可进入界面填写配置

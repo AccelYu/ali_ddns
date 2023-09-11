@@ -145,7 +145,7 @@ if __name__ == '__main__':
     qfh.setFormatter(formatter)
     log.addHandler(qfh)
 
-    app = ttk.Window("ali_ddns")
+    app = ttk.Window("ali_ddns_v1.0.0")
     ui = MyUI(app)
     ui.run()
     app.mainloop()

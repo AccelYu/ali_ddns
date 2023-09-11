@@ -87,7 +87,7 @@ class MyUI:
                 cfg = json.load(f)
             log.info('读取本地配置成功')
         except FileNotFoundError:
-            log.info('无本地配置')
+            log.info('无本地配置，应用后自动创建')
             return
         self.accessKeyId_entry.delete(0, END)
         self.accessKeyId_entry.insert(0, cfg['accessKeyId'])

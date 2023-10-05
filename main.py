@@ -1,8 +1,10 @@
-from ali_ddns import DDdns
+from ddns import DDdns
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledText
-from ttkbootstrap import StringVar
+from ttkbootstrap import StringVar, PhotoImage
+import os
+import webbrowser
 import json
 import threading
 import ctypes
@@ -18,6 +20,7 @@ class MyUI:
         self.root.pack(fill=BOTH, expand=YES)
         self.style = ttk.Style()
         self.style.theme_use('united')
+        self.pay = PhotoImage(file=f'{os.path.dirname(os.path.abspath(__file__))}/pay.png')
         self.ddns_thread = None
 
     def theme_generator(self):
@@ -26,12 +29,12 @@ class MyUI:
         theme_bar.grid_columnconfigure(0, weight=1)
 
         title = ttk.Label(
-            master=theme_bar, text="阿里云DDNS", font="-size 40 -weight bold"
+            master=theme_bar, text='阿里云DDNS', font='-size 40 -weight bold'
         )
-        title.grid(column=0, row=0, rowspan=2, sticky=W)
+        title.grid(column=0, row=0, rowspan=3, sticky=W)
 
         theme = StringVar()
-        theme_lbl = ttk.Label(theme_bar, text="切换主题")
+        theme_lbl = ttk.Label(theme_bar, text='切换主题')
         theme_lbl.grid(column=1, row=0)
         theme_btn = ttk.Checkbutton(
             master=theme_bar, style=SQUARE + TOGGLE, variable=theme,
@@ -40,13 +43,29 @@ class MyUI:
         )
         theme_btn.grid(column=2, row=0, sticky=E)
 
-        transparent_lbl = ttk.Label(theme_bar, text="透  明  度")
+        transparent_lbl = ttk.Label(theme_bar, text='透  明  度')
         transparent_lbl.grid(column=1, row=1)
         transparent_scale = ttk.Scale(
             master=theme_bar, orient=HORIZONTAL, value=1, from_=1, to=0.4, length=0,
-            command=lambda transparent: self.master.attributes("-alpha", transparent)
+            command=lambda transparent: self.master.attributes('-alpha', transparent)
         )
         transparent_scale.grid(column=2, row=1, sticky=E)
+
+        git_btn = ttk.Button(
+            theme_bar, text='GitHub', style='primary-link',
+            command=lambda: webbrowser.open_new_tab('https://github.com/AccelYu/ali_ddns'))
+        git_btn.grid(column=1, row=2)
+
+        donate = ttk.Button(
+            theme_bar, text='捐赠', style='primary-link',
+            command=self.ali_pay)
+        donate.grid(column=2, row=2)
+
+    def ali_pay(self):
+        top = ttk.Toplevel()
+        top.title("支付宝")
+        label = ttk.Label(top, image=self.pay)
+        label.pack()
 
     def conf_generator(self):
         cfg_bar = ttk.Frame(self.root, padding=10)
@@ -56,21 +75,26 @@ class MyUI:
         accessKeyId_lbl.grid(column=0, row=0, sticky=W)
         self.accessKeyId_entry = ttk.Entry(cfg_bar, width=30)
         self.accessKeyId_entry.grid(column=1, row=0, padx=20, pady=5)
-
         accessKeySecret_lbl = ttk.Label(master=cfg_bar, text='accessKeySecret')
         accessKeySecret_lbl.grid(column=0, row=1, sticky=W)
         self.accessKeySecret_entry = ttk.Entry(cfg_bar, width=30)
         self.accessKeySecret_entry.grid(column=1, row=1, padx=20, pady=5)
+        access_btn = ttk.Button(
+            master=cfg_bar, text='创建key', width=10,
+            command=lambda: webbrowser.open_new_tab('https://help.aliyun.com/document_detail/116401.html')
+        )
+        access_btn.grid(column=2, row=0)
 
-        domain_name_lbl = ttk.Label(master=cfg_bar, text='domain_name')
-        domain_name_lbl.grid(column=0, row=2, sticky=W)
-        self.domain_name_entry = ttk.Entry(cfg_bar, width=30)
-        self.domain_name_entry.grid(column=1, row=2, padx=20, pady=5)
+        domain_lbl = ttk.Label(master=cfg_bar, text='子域名')
+        domain_lbl.grid(column=0, row=2, sticky=W)
+        self.domain_entry = ttk.Entry(cfg_bar, width=30)
+        self.domain_entry.grid(column=1, row=2, padx=20, pady=5)
+        domain_btn = ttk.Button(
+            master=cfg_bar, text='创建子域', width=10,
+            command=lambda: webbrowser.open_new_tab('https://help.aliyun.com/document_detail/127149.html'))
+        domain_btn.grid(column=2, row=2)
 
-        execute_btn = ttk.Button(master=cfg_bar, text='应用并启动', command=self.execute)
-        execute_btn.grid(column=2, row=2)
-
-        interval_lbl = ttk.Label(master=cfg_bar, text='interval')
+        interval_lbl = ttk.Label(master=cfg_bar, text='时间间隔')
         interval_lbl.grid(column=0, row=3, sticky=W)
         self.interval_cbo = ttk.Combobox(
             master=cfg_bar, width=5, values=('5', '10', '20', '30', '60'), state=READONLY
@@ -79,6 +103,9 @@ class MyUI:
         self.interval_cbo.grid(column=1, row=3, sticky=W, padx=20, pady=5)
         interval_txt = ttk.Label(master=cfg_bar, text='minutes')
         interval_txt.grid(column=1, row=3, padx=10, pady=5)
+
+        execute_btn = ttk.Button(master=cfg_bar, text='应用并启动', width=10, command=self.execute)
+        execute_btn.grid(column=2, row=3)
 
     def set_cfg(self):
         log.info('读取本地配置')
@@ -93,16 +120,16 @@ class MyUI:
         self.accessKeyId_entry.insert(0, cfg['accessKeyId'])
         self.accessKeySecret_entry.delete(0, END)
         self.accessKeySecret_entry.insert(0, cfg['accessKeySecret'])
-        self.domain_name_entry.delete(0, END)
-        self.domain_name_entry.insert(0, cfg['domain_name'])
+        self.domain_entry.delete(0, END)
+        self.domain_entry.insert(0, cfg['domain_name'])
         self.interval_cbo.set(cfg['interval'])
 
     def read_cfg(self):
         cfg = {
-            "accessKeyId": self.accessKeyId_entry.get(),
-            "accessKeySecret": self.accessKeySecret_entry.get(),
-            "domain_name": self.domain_name_entry.get(),
-            "interval": int(self.interval_cbo.get())
+            'accessKeyId': self.accessKeyId_entry.get(),
+            'accessKeySecret': self.accessKeySecret_entry.get(),
+            'domain_name': self.domain_entry.get(),
+            'interval': int(self.interval_cbo.get())
         }
         return cfg
 
@@ -145,7 +172,8 @@ if __name__ == '__main__':
     qfh.setFormatter(formatter)
     log.addHandler(qfh)
 
-    app = ttk.Window("ali_ddns_v1.0.0")
+    app = ttk.Window('ali_ddns_v1.0.0')
+    app.geometry('780x580')
     ui = MyUI(app)
     ui.run()
     app.mainloop()

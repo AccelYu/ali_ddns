@@ -1,7 +1,7 @@
 # 阿里云DDNS工具
 
 ## 创建子域
-[链接](https://help.aliyun.com/document_detail/127149.html?spm=a2c4g.29719.0.0.39651fa3SfFDWA)
+[链接](https://help.aliyun.com/document_detail/127149.html)
 
 ## 创建阿里云accessKey
 [链接](https://help.aliyun.com/document_detail/116401.html)

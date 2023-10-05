@@ -37,8 +37,6 @@ class DDdns:
         self.domain_obj = Domain()
         self.domain_obj.create_client(cfg['accessKeyId'], cfg['accessKeySecret'])
         domain_name = cfg['domain_name']
-        rr = '@'
-        type = 'A'
         current_ip = self.get_current_ip()
         if current_ip is None:
             return
@@ -46,7 +44,7 @@ class DDdns:
         recordID = self.domain_obj.get_recordID(domain_name)
         if not recordID:  # 查不到recordID说明没有解析记录
             # 添加解析记录
-            add_back_info = self.domain_obj.add_domainRecord(domain_name, rr, type, current_ip)
+            add_back_info = self.domain_obj.add_domainRecord(domain_name, current_ip)
             recordID = add_back_info.body.record_id
             pre_ip = current_ip
         else:
@@ -56,7 +54,7 @@ class DDdns:
             if pre_ip != current_ip:
                 log.info('过期ip:' + pre_ip)
                 # 将当前ip更新到解析记录
-                self.domain_obj.update_domainRecord(recordID, rr, type, current_ip)
+                self.domain_obj.update_domainRecord(recordID, current_ip)
                 pre_ip = current_ip
             else:
                 log.info('ip没有改变，不做任何操作')

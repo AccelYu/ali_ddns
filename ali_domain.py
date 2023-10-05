@@ -71,32 +71,28 @@ class Domain:
         return result
 
     @log_exc('添加解析记录')
-    def add_domainRecord(self, domain_name, rr, type, value):
+    def add_domainRecord(self, domain_name, value):
         """
         https://next.api.aliyun.com/api/Alidns/2015-01-09/AddDomainRecord?params={}&sdkStyle=dara&lang=PYTHON
         :param domain_name:
-        :param rr:
-        :param type:
         :param value:
         :return result:
         """
         add_domain_record_request = alidns_20150109_models.AddDomainRecordRequest(
-            domain_name=domain_name, rr=rr, type=type, value=value
+            domain_name=domain_name, rr='@', type='A', value=value
         )
         result = self.client.add_domain_record_with_options(add_domain_record_request, self.runtime)
         return result
 
     @log_exc('修改解析记录')
-    def update_domainRecord(self, recordID, rr, type, value):
+    def update_domainRecord(self, recordID, value):
         """
         https://next.api.aliyun.com/api/Alidns/2015-01-09/UpdateDomainRecord?params={}&sdkStyle=dara&lang=PYTHON
         :param recordID:
-        :param rr:
-        :param type:
         :param value:
         :return:
         """
         update_domain_record_request = alidns_20150109_models.UpdateDomainRecordRequest(
-            record_id=recordID, rr=rr, type=type, value=value
+            record_id=recordID, rr='@', type='A', value=value
         )
         self.client.update_domain_record_with_options(update_domain_record_request, self.runtime)

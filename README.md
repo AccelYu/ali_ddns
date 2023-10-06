@@ -21,6 +21,8 @@ interval：轮询间隔，单位分钟
 }
 ```
 ### 无GUI版
-只能填写cfg.json
+- 只能填写cfg.json
+- windows版直接双击exe文件
+- linux版命令行执行```./ali_ddns &```
 ### 有GUI版
-可进入界面填写配置
+- 可进入界面填写配置

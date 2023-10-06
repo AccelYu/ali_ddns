@@ -173,7 +173,7 @@ if __name__ == '__main__':
     log.addHandler(qfh)
 
     app = ttk.Window('ali_ddns_v1.0.0')
-    app.geometry('780x580')
+    app.geometry('750x600')
     ui = MyUI(app)
     ui.run()
     app.mainloop()
